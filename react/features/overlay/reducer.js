@@ -1,5 +1,9 @@
 import { CONFERENCE_FAILED } from '../base/conference';
-import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../base/connection';
+import {
+    CONNECTION_ESTABLISHED,
+    CONNECTION_FAILED,
+    CONNECTION_WILL_CONNECT
+} from '../base/connection';
 import {
     isFatalJitsiConnectionError,
     JitsiConferenceErrors,
@@ -28,6 +32,10 @@ ReducerRegistry.register('features/overlay', (state = {}, action) => {
     case CONNECTION_FAILED:
         return _connectionFailed(state, action);
 
+    case CONNECTION_WILL_CONNECT:
+        // Reset all connection error flags
+        return _clearConnectionFlags(state);
+
     case MEDIA_PERMISSION_PROMPT_VISIBILITY_CHANGED:
         return _mediaPermissionPromptVisibilityChanged(state, action);
 
@@ -37,6 +45,23 @@ ReducerRegistry.register('features/overlay', (state = {}, action) => {
 
     return state;
 });
+
+/**
+ * Clears all flags and fields related with XMPP connection status.
+ *
+ * @param {Object} state - The Redux state of the feature overlay.
+ * @returns {Object} The new state of the feature overlay after clearing all
+ * flags related to the XMPP connection status.
+ * @private
+ */
+function _clearConnectionFlags(state) {
+    return assign(state, {
+        haveToReload: undefined,
+        isNetworkFailure: undefined,
+        reason: undefined,
+        connectionEstablished: undefined
+    });
+}
 
 /**
  * Reduces a specific Redux action CONFERENCE_FAILED of the feature overlay.
@@ -84,7 +109,7 @@ function _connectionEstablished(state) {
  */
 function _connectionFailed(state, { error, message }) {
     if (isFatalJitsiConnectionError(error)) {
-        logger.error(`XMPP connection error: ${message}`);
+        logger.error(`FATAL XMPP connection error: ${message}`);
 
         return assign(state, {
             haveToReload: true,
