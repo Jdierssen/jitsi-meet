@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { connect as reduxConnect } from 'react-redux';
@@ -48,37 +49,37 @@ class LoginDialog extends Component {
          * {@link JitsiConference} that needs authentication - will hold a valid
          * value in XMPP login + guest access mode.
          */
-        conference: React.PropTypes.object,
+        _conference: PropTypes.object,
 
         /**
          *
          */
-        configHosts: React.PropTypes.object,
+        _configHosts: PropTypes.object,
 
         /**
          * Indicates if the dialog should display "connecting" status message.
          */
-        connecting: React.PropTypes.bool,
-
-        /**
-         * Redux store dispatch method.
-         */
-        dispatch: React.PropTypes.func,
+        _connecting: PropTypes.bool,
 
         /**
          * The error which occurred during login/authentication.
          */
-        error: React.PropTypes.string,
+        _error: PropTypes.string,
 
         /**
          * Any extra details about the error provided by lib-jitsi-meet.
          */
-        errorDetails: React.PropTypes.string,
+        _errorDetails: PropTypes.string,
+
+        /**
+         * Redux store dispatch method.
+         */
+        dispatch: PropTypes.func,
 
         /**
          * Invoked to obtain translated strings.
          */
-        t: React.PropTypes.func
+        t: PropTypes.func
     };
 
     /**
@@ -90,16 +91,16 @@ class LoginDialog extends Component {
     constructor(props) {
         super(props);
 
-        // Bind event handlers so they are only bound once for every instance.
-        this._onCancel = this._onCancel.bind(this);
-        this._onLogin = this._onLogin.bind(this);
-        this._onUsernameChange = this._onUsernameChange.bind(this);
-        this._onPasswordChange = this._onPasswordChange.bind(this);
-
         this.state = {
             username: '',
             password: ''
         };
+
+        // Bind event handlers so they are only bound once per instance.
+        this._onCancel = this._onCancel.bind(this);
+        this._onLogin = this._onLogin.bind(this);
+        this._onPasswordChange = this._onPasswordChange.bind(this);
+        this._onUsernameChange = this._onUsernameChange.bind(this);
     }
 
     /**
@@ -110,20 +111,19 @@ class LoginDialog extends Component {
      */
     render() {
         const {
-            error,
-            errorDetails,
-            connecting,
+            _connecting: connecting,
+            _error: error,
+            _errorDetails: errorDetails,
             t
         } = this.props;
 
         let messageKey = '';
-        const messageOptions = { };
+        const messageOptions = {};
 
         if (error === JitsiConnectionErrors.PASSWORD_REQUIRED) {
             messageKey = 'dialog.incorrectPassword';
         } else if (error) {
             messageKey = 'dialog.connectErrorWithMsg';
-
             messageOptions.msg = `${error} ${errorDetails}`;
         }
 
@@ -204,9 +204,9 @@ class LoginDialog extends Component {
      * @returns {void}
      */
     _onLogin() {
-        const conference = this.props.conference;
+        const { _conference: conference } = this.props;
         const { username, password } = this.state;
-        const jid = toJid(username, this.props.configHosts);
+        const jid = toJid(username, this.props._configHosts);
 
         // If there's a conference it means that the connection has succeeded,
         // but authentication is required in order to join the room.
@@ -226,42 +226,45 @@ class LoginDialog extends Component {
  * @param {Object} state - The Redux state.
  * @private
  * @returns {{
- *     configHosts: Object,
- *     connecting: boolean,
- *     error: string,
- *     errorDetails: string,
- *     conference: JitsiConference
+ *     _conference: JitsiConference,
+ *     _configHosts: Object,
+ *     _connecting: boolean,
+ *     _error: string,
+ *     _errorDetails: string
  * }}
  */
 function _mapStateToProps(state) {
+    const {
+        upgradeRoleError,
+        upgradeRoleInProgress
+    } = state['features/authentication'];
+    const { authRequired } = state['features/base/conference'];
     const { hosts: configHosts } = state['features/base/config'];
     const {
         connecting,
         error: connectionError,
         errorMessage: connectionErrorMessage
     } = state['features/base/connection'];
-    const {
-        authRequired
-    } = state['features/base/conference'];
-    const {
-        upgradeRoleError,
-        upgradeRoleInProgress
-    } = state['features/authentication'];
 
-    const error
-        = connectionError
-            || (upgradeRoleError
-                && (upgradeRoleError.connectionError
-                        || upgradeRoleError.authenticationError));
+    let error;
+    let errorDetails;
+
+    if (connectionError) {
+        error = connectionError;
+        errorDetails = connectionErrorMessage;
+    } else if (upgradeRoleError) {
+        error
+            = upgradeRoleError.connectionError
+                || upgradeRoleError.authenticationError;
+        errorDetails = upgradeRoleError.message;
+    }
 
     return {
-        configHosts,
-        connecting: Boolean(connecting) || Boolean(upgradeRoleInProgress),
-        error,
-        errorDetails:
-            (connectionError && connectionErrorMessage)
-                || (upgradeRoleError && upgradeRoleError.message),
-        conference: authRequired
+        _conference: authRequired,
+        _configHosts: configHosts,
+        _connecting: Boolean(connecting) || Boolean(upgradeRoleInProgress),
+        _error: error,
+        _errorDetails: errorDetails
     };
 }
 

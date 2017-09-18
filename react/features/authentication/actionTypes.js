@@ -29,6 +29,18 @@ export const CANCEL_WAIT_FOR_OWNER = Symbol('CANCEL_WAIT_FOR_OWNER');
 export const STOP_WAIT_FOR_OWNER = Symbol('STOP_WAIT_FOR_OWNER');
 
 /**
+ * The type of (redux) action which informs that the authentication and role
+ * upgrade process has failed with an error. Check the docs of
+ * {@link JitsiAuthConnection} for more details about the error structure.
+ *
+ * {
+ *      type: UPGRADE_ROLE_FAILED,
+ *      error: Object
+ * }
+ */
+export const UPGRADE_ROLE_FAILED = Symbol('UPGRADE_ROLE_FAILED');
+
+/**
  * The type of (redux) action which signals that the process of authenticating
  * and upgrading the current conference user's role has been started.
  *
@@ -48,18 +60,6 @@ export const UPGRADE_ROLE_STARTED = Symbol('UPGRADE_ROLE_STARTED');
  * }
  */
 export const UPGRADE_ROLE_SUCCESS = Symbol('UPGRADE_ROLE_SUCCESS');
-
-/**
- * The type of (redux) action which informs that the authentication and role
- * upgrade process has failed with an error. Check the docs of
- * {@link JitsiAuthConnection} for more details about the error structure.
- *
- * {
- *      type: UPGRADE_ROLE_SUCCESS,
- *      error: Object
- * }
- */
-export const UPGRADE_ROLE_FAILED = Symbol('UPGRADE_ROLE_FAILED');
 
 /**
  * The type of (redux) action that sets delayed handler which will check if

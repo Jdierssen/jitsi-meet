@@ -1,9 +1,11 @@
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Text } from 'react-native';
 import { connect } from 'react-redux';
 
 import { Dialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
+
 import { _showLoginDialog, cancelWaitForOwner } from '../actions';
 import styles from './styles';
 
@@ -21,19 +23,19 @@ class WaitForOwnerDialog extends Component {
      */
     static propTypes = {
         /**
-         * Redux store dispatch function.
-         */
-        dispatch: React.PropTypes.func,
-
-        /**
          * The name of the conference room (without the domain part).
          */
-        roomName: React.PropTypes.string,
+        _room: PropTypes.string,
+
+        /**
+         * Redux store dispatch function.
+         */
+        dispatch: PropTypes.func,
 
         /**
          * Invoked to obtain translated strings.
          */
-        t: React.PropTypes.func
+        t: PropTypes.func
     };
 
     /**
@@ -45,8 +47,9 @@ class WaitForOwnerDialog extends Component {
     constructor(props) {
         super(props);
 
-        this._onLogin = this._onLogin.bind(this);
+        // Bind event handlers so they are only bound once per instance.
         this._onCancel = this._onCancel.bind(this);
+        this._onLogin = this._onLogin.bind(this);
     }
 
     /**
@@ -57,7 +60,7 @@ class WaitForOwnerDialog extends Component {
      */
     render() {
         const {
-            roomName,
+            _room: room,
             t
         } = this.props;
 
@@ -74,16 +77,6 @@ class WaitForOwnerDialog extends Component {
     }
 
     /**
-     * Called when the OK button is clicked.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onLogin() {
-        this.props.dispatch(_showLoginDialog());
-    }
-
-    /**
      * Called when the cancel button is clicked.
      *
      * @private
@@ -91,6 +84,16 @@ class WaitForOwnerDialog extends Component {
      */
     _onCancel() {
         this.props.dispatch(cancelWaitForOwner());
+    }
+
+    /**
+     * Called when the OK button is clicked.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onLogin() {
+        this.props.dispatch(_showLoginDialog());
     }
 }
 
@@ -101,7 +104,7 @@ class WaitForOwnerDialog extends Component {
  * @param {Object} state - The Redux state.
  * @private
  * @returns {{
- *     roomName: string
+ *     _room: string
  * }}
  */
 function _mapStateToProps(state) {
@@ -110,7 +113,7 @@ function _mapStateToProps(state) {
     } = state['features/base/conference'];
 
     return {
-        roomName: authRequired && authRequired.getName()
+        _room: authRequired && authRequired.getName()
     };
 }
 

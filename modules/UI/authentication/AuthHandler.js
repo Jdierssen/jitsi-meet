@@ -139,15 +139,18 @@ function initJWTTokenListener(room) {
  * @param {JitsiConference} room
  * @param {string} [lockPassword] password to use if the conference is locked
  */
-function doXmppAuth (room, lockPassword) {
-    const loginDialog = LoginDialog.showAuthDialog(function (id, password) {
-        const authConnection = room.createAuthenticationConnection();
+function doXmppAuth(room, lockPassword) {
+    const loginDialog = LoginDialog.showAuthDialog(
+        /* successCallback */ (id, password) => {
+            const authConnection = room.createAuthenticationConnection();
 
-        authConnection.authenticateAndUpgradeRole({
+            authConnection.authenticateAndUpgradeRole({
                 id,
                 password,
                 roomPassword: lockPassword,
-                onLoginSuccessful: () => { /* Called when XMPP login succeeds */
+
+                /** Called when the XMPP login succeeds. */
+                onLoginSuccessful() {
                     loginDialog.displayConnectionStatus(
                         'connection.FETCH_SESSION_ID');
                 }
@@ -168,9 +171,8 @@ function doXmppAuth (room, lockPassword) {
                     loginDialog.displayError(error.connectionError);
                 }
             });
-    }, function () {
-        loginDialog.close();
-    });
+        },
+        /* cancelCallback */ () => loginDialog.close());
 }
 
 /**
