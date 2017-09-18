@@ -1,22 +1,13 @@
 import React, { Component } from 'react';
+import { Text, TextInput, View } from 'react-native';
 import { connect as reduxConnect } from 'react-redux';
-import {
-    Button,
-    Modal,
-    Text,
-    TextInput,
-    View
-} from 'react-native';
-import {
-    authenticateAndUpgradeRole,
-    cancelLogin
-} from '../actions';
-import {
-    connect,
-    toJid
-} from '../../base/connection';
+
+import { connect, toJid } from '../../base/connection';
+import { Dialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { JitsiConnectionErrors } from '../../base/lib-jitsi-meet';
+
+import { authenticateAndUpgradeRole, cancelLogin } from '../actions';
 import styles from './styles';
 
 /**
@@ -137,38 +128,35 @@ class LoginDialog extends Component {
         }
 
         return (
-            <Modal
-                onRequestClose = { this._onCancel }
-                style = { styles.outerArea }
-                transparent = { true } >
-                <View style = { styles.dialogBox }>
-                    <Text>Username:</Text>
+            <Dialog
+                okDisabled = { connecting }
+                onCancel = { this._onCancel }
+                onSubmit = { this._onLogin }>
+                <View style = { styles.loginDialog }>
+                    <Text style = { styles.loginDialogText }>Username:</Text>
                     <TextInput
                         onChangeText = { this._onUsernameChange }
                         placeholder = { 'user@domain.com' }
-                        style = { styles.textInput }
+                        style = { styles.loginDialogTextInput }
                         value = { this.state.username } />
-                    <Text>Password:</Text>
+                    <Text style = { styles.loginDialogText }>Password:</Text>
                     <TextInput
                         onChangeText = { this._onPasswordChange }
                         placeholder = { t('dialog.userPassword') }
                         secureTextEntry = { true }
-                        style = { styles.textInput }
+                        style = { styles.loginDialogTextInput }
                         value = { this.state.password } />
-                    <Text>
-                        {error ? t(messageKey, messageOptions) : ''}
-                        {connecting && !error
-                            ? t('connection.CONNECTING') : ''}
+                    <Text style = { styles.loginDialogText }>
+                        {
+                            error
+                                ? t(messageKey, messageOptions)
+                                : connecting
+                                    ? t('connection.CONNECTING')
+                                    : ''
+                        }
                     </Text>
-                    <Button
-                        disabled = { connecting }
-                        onPress = { this._onLogin }
-                        title = { t('dialog.Ok') } />
-                    <Button
-                        onPress = { this._onCancel }
-                        title = { t('dialog.Cancel') } />
                 </View>
-            </Modal>
+            </Dialog>
         );
     }
 

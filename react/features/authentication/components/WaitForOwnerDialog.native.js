@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import { Text } from 'react-native';
 import { connect } from 'react-redux';
-import { Button, Modal, Text, View } from 'react-native';
 
+import { Dialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { _showLoginDialog, cancelWaitForOwner } from '../actions';
 import styles from './styles';
@@ -61,25 +62,14 @@ class WaitForOwnerDialog extends Component {
         } = this.props;
 
         return (
-            <Modal
-                onRequestClose = { this._onCancel }
-                style = { styles.outerArea }
-                transparent = { true } >
-                <View style = { styles.dialogBox } >
-                    <Text>
-                        { t(
-                            'dialog.WaitForHostMsg',
-                            { room: roomName })
-                        }
-                    </Text>
-                    <Button
-                        onPress = { this._onLogin }
-                        title = { t('dialog.IamHost') } />
-                    <Button
-                        onPress = { this._onCancel }
-                        title = { t('dialog.Cancel') } />
-                </View>
-            </Modal>
+            <Dialog
+                okTitleKey = { 'dialog.IamHost' }
+                onCancel = { this._onCancel }
+                onSubmit = { this._onLogin }>
+                <Text style = { styles.waitForOwnerDialog }>
+                    { t('dialog.WaitForHostMsg', { room }) }
+                </Text>
+            </Dialog>
         );
     }
 
